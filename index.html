@@ -3,138 +3,202 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trend 2: AI Agent Infrastructure 深度分析</title>
+<title>YC W26 Agent Infra 深度分析报告</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --accent: #E85D2A; 
-    --accent-light: #F5A572;
-    --bg-dark: #000;
-    --bg-light: #f5f5f5; 
-    --card-bg: #ffffff;
-    --text-main: #333;
-    --text-muted: #666;
+    --accent: #E85D2A;
+    --accent-light: #feebe5;
+    --dark: #1a1a1a;
+    --gray: #6b6b6b;
+    --light-gray: #f5f5f5;
+    --card-bg: #fafafa;
     --radius: 16px;
+    --table-border: #eaeaea;
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
-    background: var(--bg-light); 
-    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0b0b0b;
+    color: #333;
     overflow: hidden;
     height: 100vh;
     width: 100vw;
-    transition: background 0.5s ease;
   }
 
   .deck { width: 100vw; height: 100vh; position: relative; }
 
   .slide {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    padding: 60px; opacity: 0; pointer-events: none;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateX(50px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(0.95) translateY(20px);
   }
 
-  .slide.intro-slide { background: var(--bg-dark); color: #fff; transform: translateX(0); }
-  .slide.intro-slide h1 { color: #fff; }
-  .slide.intro-slide .description { color: #888; }
+  .slide.active { 
+    opacity: 1; 
+    pointer-events: auto; 
+    transform: scale(1) translateY(0);
+  }
 
-  .slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+  .slide-content {
+    background: #fff;
+    border-radius: var(--radius);
+    width: 90%;
+    max-width: 1200px;
+    height: 85%;
+    padding: 50px 60px;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    position: relative;
+  }
 
-  .container { max-width: 1100px; width: 100%; }
-
-  h1 { font-size: 5rem; font-weight: 900; line-height: 0.9; margin-bottom: 20px; color: #000; letter-spacing: -3px; }
-  h1 span { color: var(--accent); }
+  /* Typography & Layout */
+  h1 { font-size: 2.2rem; font-weight: 900; color: #000; margin-bottom: 25px; line-height: 1.2; letter-spacing: -0.5px; }
+  h2 { font-size: 1.8rem; font-weight: 800; color: #000; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  h3 { font-size: 1.2rem; font-weight: 700; color: #111; margin-bottom: 12px; }
+  p, li { font-size: 1rem; line-height: 1.6; color: #444; margin-bottom: 12px; }
+  ul { padding-left: 20px; margin-bottom: 15px; }
   
-  h2 { font-size: 2.3rem; font-weight: 800; margin-bottom: 30px; color: #000; letter-spacing: -1px; }
-
-  .description { font-size: 1.25rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 30px; max-width: 800px; }
-
-  .table-container { background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
-  table { width: 100%; border-collapse: collapse; text-align: left; }
-  th { background: #f9f9f9; color: #000; padding: 18px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #eee; }
-  td { padding: 18px; border-bottom: 1px solid #eee; font-size: 0.9rem; color: #444; vertical-align: top; }
-  .highlight-td { color: var(--accent); font-weight: 700; }
-
-  .company-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; }
-  .company-card { 
-    background: #fff; padding: 25px; border-radius: var(--radius); 
-    display: flex; flex-direction: column; position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    border: 1px solid #efefef;
-  }
-  .tag { 
-    position: absolute; top: 25px; right: 25px; font-size: 0.65rem; font-weight: 700; 
-    color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 20px;
-    text-decoration: none; transition: 0.3s;
-  }
-  .tag:hover { background: var(--accent); color: #fff; }
-
-  .company-name { font-size: 1.6rem; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px; color: #000; }
+  .tag { background: var(--accent-light); color: var(--accent); padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.5px;}
   
-  .info-group { margin-bottom: 12px; }
-  .info-label { font-size: 0.65rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-  .info-text { font-size: 0.82rem; line-height: 1.5; color: #444; }
-  
-  .insight-card { 
-    background: #fff; padding: 25px; border-radius: var(--radius); 
-    border-left: 5px solid var(--accent);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    margin-top: 24px;
+  /* 详情按钮样式 Details Button */
+  .details-btn {
+    position: absolute;
+    top: 50px; /* 和内容框的内边距保持一致 */
+    right: 60px;
+    background: #f0f0f0;
+    color: #333;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .details-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(232, 93, 42, 0.25);
   }
 
-  ul { list-style: none; margin-top: 4px; }
-  li { position: relative; padding-left: 15px; margin-bottom: 6px; font-size: 0.82rem; color: #444; }
-  li::before { content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 1.5px; background: var(--accent); }
+  .highlight-summary {
+    background: #fff5f0;
+    border-left: 4px solid var(--accent);
+    padding: 24px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 30px;
+  }
+  .highlight-summary h3 { color: var(--accent); margin-bottom: 10px; font-weight: 800;}
 
-  .data-highlight { background: #fff5f0; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--accent-light); margin-top: 5px; }
-  .data-highlight span { font-weight: 700; color: var(--accent); }
+  .my-view {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    padding: 24px;
+    border-radius: var(--radius);
+    margin-top: 25px;
+    transition: transform 0.2s;
+  }
+  .my-view:hover { box-shadow: 0 4px 15px rgba(0,86,179,0.08); }
+  .my-view h3 { color: #0056b3; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .my-view p { color: #333; font-weight: 500; margin-bottom: 0; }
 
-  .nav { position: fixed; bottom: 40px; right: 40px; display: flex; gap: 10px; z-index: 100; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; }
+  
+  .content-box {
+    background: var(--card-bg);
+    border: 1px solid #eee;
+    padding: 25px;
+    border-radius: var(--radius);
+    transition: transform 0.2s;
+  }
+  .content-box:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+  /* Table Specific Styles */
+  .table-container {
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 2px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border: 1px solid #eaeaea;
+  }
+  
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
+  th, td { padding: 20px 24px; text-align: left; border-bottom: 1px solid var(--table-border); }
+  th { background: #fbfbfb; font-weight: 800; color: #000; font-size: 1.05rem; }
+  tr:last-child td { border-bottom: none; }
+  td.category { font-weight: 800; color: var(--accent); white-space: nowrap; width: 15%; }
+  td.problem { color: #444; width: 45%; font-weight: 500; line-height: 1.5; }
+  td.companies { color: #222; width: 40%; font-weight: 600; }
+  tr:hover td { background: #fafafa; }
+
+  /* Navigation */
+  .nav { position: fixed; bottom: 30px; right: 40px; display: flex; gap: 12px; z-index: 100; }
   button { 
-    background: #000; border: none; width: 54px; height: 54px; border-radius: 27px; 
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
+    width: 48px; height: 48px; border-radius: 10px; 
     color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: 0.3s; font-size: 20px;
+    font-size: 1.4rem; transition: all 0.2s; backdrop-filter: blur(5px);
   }
-  button:hover { background: var(--accent); transform: scale(1.05); }
+  button:hover { background: var(--accent); border-color: var(--accent); transform: scale(1.05); }
+  button:active { transform: scale(0.95); }
   
-  .slide-counter { 
-    position: fixed; bottom: 58px; left: 40px; font-size: 0.75rem; font-weight: 800; 
-    color: #999; z-index: 100; letter-spacing: 2px;
-  }
-
-  @media (max-width: 900px) {
-    h1 { font-size: 2.5rem; }
-    .company-grid { grid-template-columns: 1fr; }
-    .slide { padding: 30px; }
-  }
+  .slide-counter { position: fixed; bottom: 40px; left: 40px; font-size: 1.1rem; font-weight: 700; color: rgba(255,255,255,0.8); z-index: 100; }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #aaa; }
 </style>
 </head>
-<body id="body">
+<body>
 
 <div class="deck">
-  <!-- Slide 1: Intro -->
-  <div class="slide intro-slide active">
-    <div class="container">
-      <h1>TREND 2:<br><span>AGENT INFRA</span></h1>
-      <p class="subtile">
-        Aiden Che | YC W26 Batch | 2026.03
-      </p>
-      <p class="description">
-        <li>当 AI Agent 开始在企业内部实际执行任务（如修改代码、操作数据库、支付转账）时，原有的系统架构无法满足需求。</li>
-        <li>本报告梳理了 YC W26 批次中，专门为 Agent 运行提供算力调度、权限管理、安全拦截和支付接口的底层基础设施公司。</li>
+
+  <!-- Slide 1: 总起页 (Intro) -->
+  <div class="slide active">
+    <div class="slide-content">
+      <h1>YC W26 Agent Infra 深度分析报告：总览</h1>
+      
+      <div class="content-box" style="margin-top: 30px;">
+        <h3>📌 报告背景</h3>
+        <p>目前，AI Agent 正在从简单的聊天工具演变为接管企业内部实际业务流程（如修改代码、分配资金、处理数据）的自动化程序。这种转变暴露出底层基础设施的缺失。本报告系统性拆解 YC W26 批次中，为 Agent 规模化与合规化提供底层设施的 13 家核心公司。</p>
+      </div>
+
+      <div class="content-box" style="margin-top: 20px;">
+        <h3>📑 报告导读 (Agenda)</h3>
+        <ul>
+          <li><strong>赛道宏观全景图：</strong> 汇总 6 大基础设施板块及 13 家代表企业的分类逻辑。</li>
+          <li><strong>核心项目深度拆解：</strong> 针对 13 家公司，逐一拆解其核心业务、解决的痛点、目标客户、体量数据及退出路径预测，并附带个人分析视角。</li>
+          <li><strong>核心结论与未来展望：</strong> 总结 Agent Infra 的商业化本质与终局推演。</li>
+        </ul>
+      </div>
+
+      <div class="my-view">
+        <h3>💡 核心视角抛出</h3>
+        <p>与其投资容易被淘汰的应用层代理，不如投资为整个生态提供安全阻断、算力优化和环境支持的基础设施。无论应用层竞争如何激烈，基础设施公司都能作为“卖水人”获取稳定的 B2B 采购收益，且具备清晰的并购退出路径。</p>
+      </div>
     </div>
   </div>
 
-  <!-- Slide 2: Landscape Table -->
+  <!-- Slide 2: 赛道汇总图表 -->
   <div class="slide">
-    <div class="container">
-      <h2>Agent Infra 赛道分布图</h2>
+    <div class="slide-content">
+      <h1>Agent Infra 赛道分布图</h1>
+      <p style="margin-bottom: 30px; font-size: 1.1rem; color: #666;">YC W26 批次中，最具代表性的 13 家 Agent 基础设施公司全景图谱</p>
+      
       <div class="table-container">
         <table>
           <thead>
@@ -146,34 +210,34 @@
           </thead>
           <tbody>
             <tr>
-              <td class="highlight-td">计算资源优化</td>
-              <td>降低 Token 消耗，提高现有显卡的利用率</td>
-              <td>Chamber, Token Co, Piris Labs</td>
+              <td class="category">计算资源优化</td>
+              <td class="problem">降低 Token 消耗，提高现有显卡的利用率</td>
+              <td class="companies">Chamber, Token Co, Piris Labs</td>
             </tr>
             <tr>
-              <td class="highlight-td">身份与权限</td>
-              <td>为 AI 程序分配企业内部权限，实现操作可溯源</td>
-              <td>Agentic Fabriq, Didit</td>
+              <td class="category">身份与权限</td>
+              <td class="problem">为 AI 程序分配企业内部权限，实现操作可溯源</td>
+              <td class="companies">Agentic Fabriq, Didit</td>
             </tr>
             <tr>
-              <td class="highlight-td">安全与护栏</td>
-              <td>在 AI 执行外部 API 调用或运行代码前进行拦截测试</td>
-              <td>Salus, Runtime</td>
+              <td class="category">安全与护栏</td>
+              <td class="problem">在 AI 执行外部 API 调用或运行代码前进行拦截测试</td>
+              <td class="companies">Salus, Runtime</td>
             </tr>
             <tr>
-              <td class="highlight-td">监控与可靠性</td>
-              <td>追踪 AI 多步任务的逻辑状态，自动化评估回复质量</td>
-              <td>Sentrial, Moda</td>
+              <td class="category">监控与可靠性</td>
+              <td class="problem">追踪 AI 多步任务的逻辑状态，自动化评估回复质量</td>
+              <td class="companies">Sentrial, Moda</td>
             </tr>
             <tr>
-              <td class="highlight-td">金融与支付</td>
-              <td>为代码程序提供合规的虚拟卡开户和语音扣款接口</td>
-              <td>Sponge, Maven</td>
+              <td class="category">金融与支付</td>
+              <td class="problem">为代码程序提供合规的虚拟卡开户和语音扣款接口</td>
+              <td class="companies">Sponge, Maven</td>
             </tr>
             <tr>
-              <td class="highlight-td">环境与交互</td>
-              <td>提供让 AI 保持长期后台运行的云环境和前端组件支持</td>
-              <td>Terminal Use, 21st</td>
+              <td class="category">环境与交互</td>
+              <td class="problem">提供让 AI 保持长期后台运行的云环境和前端组件支持</td>
+              <td class="companies">Terminal Use, 21st</td>
             </tr>
           </tbody>
         </table>
@@ -181,429 +245,453 @@
     </div>
   </div>
 
-  <!-- Slide 3: Compute Optimization -->
+  <!-- Slide 3: Chamber -->
   <div class="slide">
-    <div class="container">
-      <h2>01. 计算与推理：提高硬件和 API 效率</h2>
-      <div class="company-grid">
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Chamber</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">当你的昂贵GPU像没活干的员工一样闲置时，Chamber自动帮它们找活并调度。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <div class="info-text">它是第一个把GPU管理做得像“自动驾驶”的公司。别的公司只做监控大屏，它能做到闲时自动降频、任务激增时秒级自愈。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              目前管理超 <span>12,000+</span> 张企业级GPU，达成 <span>$55k</span> MRR（月经常性收入）。已签下 12 家中大型私有化模型企业客户。
-            </div>
-          </div>
-        </div>
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">The Token Co</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">在AI开口说话或阅读前，把Prompt里的所有废话和重复内容在底层无损压缩。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <div class="info-text">在长文本(百万Token)爆发期，它做到了毫秒级“语义过滤”而非简单的模型剪枝。它直接帮开发者省下了高昂的API调用费。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              API日均处理超 <span>25亿</span> Token，实现 <span>$80k</span> MRR。服务 45 家头部 AI-Native 应用开发商，平均为客户节省 35% 成本。
-            </div>
-          </div>
-        </div>
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/chamber" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Chamber <span class="tag">计算资源优化</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Chamber 是面向 ML 团队的 AIOps agent。它持续监控 AI 基础设施，发现故障、做 root-cause analysis、处理问题，并优化 AI workload 与跨云扩展。 </p>
+        <ul>
+          <li><strong>解决的问题：</strong> 企业级 GPU 集群显存受限与空转导致的高昂闲置成本。</li>
+          <li><strong>目标客户：</strong> 拥有大规模 GPU 集群的云服务商、AI 应用大厂及顶级 AI 实验室。</li>
+          <li><strong>为什么重要：</strong> 直接降低资本支出 (CapEx)，在算力资源有限的情况下最大化现有硬件的吞吐量。</li>
+        </ul>
       </div>
-      <div class="insight-card">
-        <div class="info-label">Sector Insight</div>
-        <div class="info-text">这个赛道的核心是帮助企业省钱。无论是通过软件层面的 Token 压缩，还是底层的显卡任务自动调度，目的都是为了在无法获取更多高端硬件的情况下，把现有的计算成本降到最低。</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Slide 4: Piris Labs Hardware -->
-  <div class="slide">
-    <div class="container">
-      <h2>01. 计算与推理 (续)</h2>
-      <div class="company-grid" style="grid-template-columns: 1fr;">
-        <div class="company-card">
-          <a href="#" class="tag">HARDWARE</a>
-          <div class="company-name">Piris Labs</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">打破英伟达 NVLink 的限制，自研一套专用于大模型数据交换的光纤传输架构。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>在软件 Infra 红海中，它不修补旧系统，而是直接挑战万亿参数多模态模型的“节点间握手延迟”。</li>
-              <li>典型硬科技叙事逻辑：高风险高回报项目，一旦成功将重塑数据中心互联标准，潜在的回报是非常可观的。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">当前阶段 (Traction)</div>
-            <div class="info-text data-highlight">
-              目前处于准商用阶段，已获得 <span>$4M</span> 超额认购种子轮融资。正在与 <span>3家</span> 北美 Tier-1 数据中心（Equinix 级别）进行硬件级 Pilot 压力测试。
-            </div>
-          </div>
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开材料没有披露具体 pricing。按照商业逻辑，大概率是面向使用 AI 基础设施的企业团队提供基础设施自动运维与优化软件，属于类似于 B2B infra 产品。。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>公开 founder 信息显示，Charles Ding 过往在 Meta、Amazon、Microsoft 任职；Andreas Bloomquist 做过 AWS CloudWatch Application Signals，也在 Amazon 负责过中心化 GPU orchestration；Jason Ong 有 Amazon、Flexport、Avant、Amount 等经历；Shaocheng Wang 曾是 Amazon senior software engineer，做过 AWS 产品、observability 和 distributed systems。</p>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Slide 5: Identity & IAM -->
-  <div class="slide">
-    <div class="container">
-      <h2>02. 身份与权限：企业的授权管理</h2>
-      <div class="company-grid">
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Agentic Fabriq</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <ul class="info-text">
-              <li>为企业内部的 AI Agent 提供统一的身份认证和权限管理系统。</li>
-              <li>防止 Agent 拿着高级别用户的最高权限到处跑，为不同的 AI 分配特定的动态鉴权令牌。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>系统能做到全链路溯源：如果 AI 误删了数据库记录，管理员能通过日志直接查出是哪个模型、在哪个员工的授权下做的操作。</li>
-              <li>没有这套管理机制，大型企业无法向审计部门解释 AI 操作的合规性（SOC2 审计）。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              日均处理 <span>150万次</span> 鉴权请求，达成 <span>$40k</span> MRR。目前在与 20 余家金融/医疗企业跑 Pilot。
-            </div>
-          </div>
-        </div>
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Didit</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">为 C 端用户和他们的 AI Agent 提供跨平台的偏好数据和身份打通服务。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>目前每个网站的 AI 都是孤立的。用户在 A 网站的 AI 那里留下了“喜欢靠窗座位、衣服穿 M 码”的数据，去了 B 网站还要重新输入。</li>
-              <li>Didit 把用户的个人信息、支付方式、偏好数据打包在一起。用户授权后，任何外部平台的 Agent 都可以读取这个身份包，直接按照用户的喜好去执行订票或购物任务，省去重复交互的环节。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              开源 SDK 月下载量突破 <span>50万</span> 次，覆盖 <span>15万</span> 活跃开发者，商业版 API 实现 <span>$15k</span> MRR。
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="insight-card">
-        <div class="info-label">Sector Insight</div>
-        <div class="info-text">企业在让 AI 代替人类操作系统前，必须解决权限分配的问题。这套身份网络明确了 AI 在系统里的操作身份，确保所有的执行动作都在被允许的范围内，并且可以随时追踪和撤销权限。</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Slide 6: Security & Guardrails -->
-  <div class="slide">
-    <div class="container">
-      <h2>03. 安全与护栏：API 拦截与沙盒隔离</h2>
-      <div class="company-grid">
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Salus</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">提供 API 请求的前置拦截器。在 AI Agent 真正执行外部调用（如发送邮件、转账、修改数据库）之前，强制进行安全合规验证。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>传统企业安全软件只能在操作发生后记录日志并报警。</li>
-              <li>Salus 会在请求发出的前一刻校验参数是否合规，如果违规直接阻断，并向大模型返回具体的错误原因，让大模型纠正后重新执行。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              已累计评估 <span>50亿+</span> 次高危 API 调用，营收 <span>$65k</span> MRR，成功打入 8 家财富 500 强企业。
-            </div>
-          </div>
-        </div>
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Runtime</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">为自动编写代码的 AI Agent 提供云端隔离容器（沙盒），专门用来安全地运行和测试未知代码。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>AI 程序员（如 Devin）生成的代码如果直接在企业的真实服务器上运行，可能会引发系统崩溃或引入恶意程序。</li>
-              <li>Runtime 提供用完即毁的独立云环境。AI 可以在里面自由跑代码测试，无论代码出错还是引发崩溃，都不会影响企业的主代码库和系统。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              日均自动生成/销毁超 <span>10万</span> 个沙盒，达成 <span>$25k</span> MRR，开发者排队名单超 1,500 人。
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="insight-card">
-        <div class="info-label">Sector Insight</div>
-        <div class="info-text">过去企业安全主要防御外部黑客攻击，现在的重点是防止内部 AI 程序因为逻辑错误导致的破坏。如果不加拦截，AI 写错的代码会导致系统崩溃，错误的 API 调用会导致数据泄露。这一赛道专门在 AI 执行具体动作前进行验证拦截和物理隔离。</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Slide 7: Monitoring & Reliability -->
-  <div class="slide">
-    <div class="container">
-      <h2>04. 监控与可靠性：状态追踪与自动化测试</h2>
-      <div class="company-grid">
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Sentrial</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">专门监控 AI Agent 在执行多步复杂任务时的逻辑状态，检测并阻断陷入死循环或偏离任务目标的行为。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>传统的服务器监控只能看到 CPU 或内存的使用率，无法判断 AI 的业务逻辑是否出错。</li>
-              <li>当给 AI 安排一个 10 步的任务时，它可能在第 3 步和第 4 步之间反复循环做无用功。Sentrial 追踪每一步的推理日志，一旦发现重复动作，立刻强制停止并通知开发者。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              部署超 <span>50个</span> 企业级监控节点，营收 <span>$40k</span> MRR，正为 300+ 个高频生产级 Agent 提供监控。
-            </div>
-          </div>
-        </div>
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Moda</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">提供自动化测试平台。使用高级大模型作为评估工具，按照开发者设定的指标，批量跑分测试 Agent 的输出质量。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>开发者修改了提示词或更换底层模型后，过去只能依靠人工随机抽查聊天记录来判断回答质量，效率很低。</li>
-              <li>Moda 可以根据几千条历史对话记录自动生成测试集，由系统自动打分出具报告，让开发者直观看到这次修改有没有导致 AI 退步。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              服务 <span>60+</span> AI 团队，API 日调用量破 <span>1000万</span>，达成 <span>$45k</span> MRR。
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="insight-card">
-        <div class="info-label">Sector Insight</div>
-        <div class="info-text">监控传统软件是看有没有报错和宕机，监控 AI 软件是看它的回答质量和任务逻辑。这部分基础设施通过抓取大模型每一步的推理过程，并利用自动化测试流水线，大幅节省了企业人工排查 AI 错误和评估回答质量的时间。</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Slide 8: Finance & Payments -->
-  <div class="slide">
-    <div class="container">
-      <h2>05. 金融支付：虚拟卡与语音结算</h2>
-      <div class="company-grid">
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Sponge</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">为 AI Agent 程序提供可调用 API 的虚拟信用卡，并为企业提供配套的资金额度管理后台。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>传统银行开户需要真人实名验证（KYC）。Sponge 解决了针对代码程序的合规审查问题。</li>
-              <li>企业可以给负责采购的 AI 分发一张专属虚拟卡，并设定“每月最高限额 500 美元用于支付服务器费用”的规则，让 AI 在不需要人工干预的情况下完成自动续费和结算。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              平台月均处理 Agent 交易额突破 <span>$250k</span>，营收 <span>$12k</span> MRR，80+ 生产级 Agent 在使用其账户。
-            </div>
-          </div>
-        </div>
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Maven</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">提供语音 AI 专用的支付网关接口。将声纹识别与支付系统打通，实现通话过程中的直接扣款。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>传统流程下，用户通过电话让 AI 预订服务，最后一步必须挂断电话并点击手机短信里的支付链接付款，这会导致大量用户流失。</li>
-              <li>Maven 接口允许用户在通话中直接说出支付确认指令，系统实时验证声纹并调取绑定的信用卡扣款，实现了不跨页面的纯语音支付闭环。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              使客户语音支付转化率提升 <span>40%</span>，日均处理 <span>$50k</span> 语音流水，与 3 家北美头部连锁酒店达成合作。
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="insight-card">
-        <div class="info-label">Sector Insight</div>
-        <div class="info-text">如果 AI 要独立完成完整的业务闭环（例如订票、买资源），就必须具备付款能力。但现有的支付系统主要是基于人类用户设计的。这批公司专门提供供机器代码调用的支付 API 和虚拟卡开户服务，解决了 AI 自动化执行的最后一环。</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Slide 9: Environment & Storage -->
-  <div class="slide">
-    <div class="container">
-      <h2>06. 环境与交互：后台云环境与前端组件</h2>
-      <div class="company-grid">
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">Terminal Use</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">为 AI Agent 提供独立运行的云端主机环境和持久化的文件系统。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>一般网页端 AI，只要用户关闭浏览器页面，任务就会中断，所有上下文都会丢失。</li>
-              <li>有些任务（如大规模数据爬取、深度市场分析报告）需要耗时数小时甚至几天。Terminal Use 提供了一个后台运行环境，用户布置完任务后可以关闭网页，AI 会在云端继续执行，并把最终生成的文件保存在这个环境中。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              累计为离线 Agent 提供超 <span>150万</span> 小时运行环境，活跃 AI DAU 破 <span>5,000</span>，实现 <span>$25k</span> MRR。
-            </div>
-          </div>
-        </div>
-        <div class="company-card">
-          <a href="#" class="tag">DEEP DIVE</a>
-          <div class="company-name">21st</div>
-          <div class="info-group">
-            <div class="info-label">核心任务</div>
-            <div class="info-text">提供供大模型调用的前端 UI 组件代码库。让大模型可以直接在聊天界面中渲染出可视化图表或交互式按钮。</div>
-          </div>
-          <div class="info-group">
-            <div class="info-label">应用场景</div>
-            <ul class="info-text">
-              <li>如果用户询问财务数据或需要填写信息，大模型仅返回纯文本是不够直观的。</li>
-              <li>通过接入 21st 的接口，AI 可以直接在回复中返回组件代码。用户的聊天框里会立刻出现一个可拖拽的柱状图或一个带有日历选择器的表单，避免了开发者需要自己手动编写这些前端界面的解析逻辑。</li>
-            </ul>
-          </div>
-          <div class="info-group">
-            <div class="info-label">核心体量 (Traction)</div>
-            <div class="info-text data-highlight">
-              UI 组件库月均被调用 <span>300万次</span>，服务 1,200+ 企业开发者，营收 <span>$55k</span> MRR。
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="insight-card">
-        <div class="info-label">Sector Insight</div>
-        <div class="info-text">AI 要真正发挥效用，需要突破传统聊天框的限制。这部分的基础设施一方面提供了满足耗时任务所需的长期后台运行环境，另一方面提供了提升用户视觉体验的前端渲染工具库，让 AI 产品的交互从“纯文本对话”升级为“可视化应用”。</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Slide 10: Summary Conclusion -->
-  <div class="slide">
-    <div class="container">
-      <h2>总结：Agent Infra 的商业化实质</h2>
-    
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>核心演变方向</th>
-              <th>具体业务变化</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span style="font-weight: 800; color: var(--accent);">从降低成本 到 提升操作权限</span></td>
-              <td>早期做基础设施是为了降低大模型 API 的调用费用；现在做基础设施是为了让 AI 能安全地执行高风险操作（如修改代码库、支付转账）。</td>
-            </tr>
-            <tr>
-              <td><span style="font-weight: 800; color: var(--accent);">从盲目信任 到 操作可追溯</span></td>
-              <td>企业无法接受 AI 的黑盒操作。现在的产品重点是记录 AI 每一步的推理日志、验证它的 API 请求，满足企业的审计和数据合规要求。</td>
-            </tr>
-            <tr>
-              <td><span style="font-weight: 800; color: var(--accent);">从聊天助手 到 自动化流程节点</span></td>
-              <td>AI 拥有了独立的后台运行环境、虚拟信用卡账户和跨平台身份标识。这意味着 AI 程序已经可以作为独立的主体去采购资源并完成业务闭环。</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="margin-top: 30px; padding: 20px; background: #fff; border-radius: 12px; border: 1px dashed var(--accent);">
-        <p style="font-size: 1.1rem; color: #000; font-weight: 700; text-align: center;">
-        在这个赛道中，谁能为 AI 提供最稳定的运行环境、最合规的接口拦截以及最详细的操作日志，谁就能成为下一代企业级应用的基础底座。
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>如果 agent 真正进入企业生产环境，infra 自动化与故障处置会比更强的能力更容易形成预算。
+          <li>Chamber 的价值不局限于GPU 调度管理，而在于把 AI infra 的运维、诊断和优化做成持续运行的 agent：可以理解为Agent时代“卖铲子的”Nvidia的角色。不管Agent是否能真正达到productivity的能力，它都能从中获益。</li>
         </p>
       </div>
     </div>
   </div>
 
+  <!-- Slide 4: The Token Co -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/the-token-company" target="_blank" class="details-btn">Details ↗</a>
+      <h2>The Token Co <span class="tag">计算资源优化</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>The Token Company 做的是 LLM input compression。它通过一个非生成式的快速机器学习模型，删除 prompt 中无用 token，以 drop-in API 的方式降低 token 数、延迟和成本，并声称还能改善模型表现；其公开材料写到可在 100ms 内压缩 100k tokens。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> 处理长文本或检索增强生成（RAG）时产生的极高 API 调用费用。</li>
+          <li><strong>目标客户：</strong> 重度依赖大模型长上下文的 Agent 企业及垂直领域（如法律、科研）应用开发商。</li>
+          <li><strong>为什么重要：</strong> 在不修改核心业务代码、不损失推理精度的前提下，直接将底层 API 账单降低 30%-50%。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开材料没有披露具体定价。按照商业逻辑，The Token Company 应该是提供面向开发者/企业的 prompt compression API，商业化应建立在 API 接入与持续调用之上。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>YC 公共页面显示，Otso Veisterä 是 solo founder；公开自述为 ML researcher，并写有 “youngest solo founder in YC history”。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>这类公司最大的吸引力在于它不改变上层工作流，只切一层成本与延迟优化：短期来看它的增长和变现会比较快，因为它大规模应用的难度相比于多场景切入的project更低；
+          <li>但它的长期价值，（1）取决于压缩效果是否稳定，效果是否不影响user的本意、（2）是否能跨模型泛化，（3）以及这种能力会不会被模型厂商自己内建（比如chatGPT等在收到用户prompt之后，自动进行压缩以减少Token&context）。</li>li></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Piris Labs -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/pirislabs" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Piris Labs <span class="tag">计算资源优化</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Piris Labs 提供 full-stack inference service，通过 proprietary photonic hardware 与 vertically optimized software stack 来解决 AI 的 data movement bottleneck 和 memory wall 问题，目标是在更低成本下实现接近传统集群的性能，同时提升 FLOP utilization、降低 latency。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> 大规模集群节点间的电信号传输延迟（内存墙问题），以及端侧推理算力不足。</li>
+          <li><strong>目标客户：</strong> Tier-1 数据中心、云服务商，以及需要本地化部署 AI 的硬件设备制造商。</li>
+          <li><strong>为什么重要：</strong> 突破物理硬件带宽限制，让万亿参数模型的分布式推理成本和延迟大幅下降。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开材料最明确的表述是 “full-stack inference service”。按照商业逻辑，大概率不是单卖芯片，而是以推理服务的形态对外提供完整能力；但是具体的定价策略尚未公开。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>公开 founder 信息显示，Ali Khalatpour 具备 MIT、NASA、Stanford 相关背景；Keyvan Moghadam 过往在 Meta 和 X 做 AI/ML 产品与 0-to-1 项目。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>这是一个很高上限但是同时达成风险也很高的项目:
+          <li>属于高风险、高回报的硬科技投资：因为目前制约 AI 发展的不仅是算力资源中，不仅是算力芯片，也是内存带宽和通信延迟，所以如果 Piris 能在光互连或编译优化上取得本质突破，它甚至有潜力颠覆现有的 NVLink 垄断；
+          <li>但是这类公司需要极高的资金支持，并且风险较高；比如，在当前高速增长的显卡市场变为存量市场时，Nvidia这类大厂很有可能自己下场来做类似的业务。</li></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: Agentic Fabriq -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/agentic-fabriq" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Agentic Fabriq <span class="tag">身份与权限</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Agentic Fabriq 的官方定位是 “Okta for Agents”。它是一个覆盖整个组织的数据 permissioning control plane，面向 AI 和员工统一处理 auth、integrations 与 permissions，既可服务内部员工使用 AI，也可服务外部客户场景。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> AI 程序在企业内网中身份匿名、权限不受控且操作无法精准审计的问题。</li>
+          <li><strong>目标客户：</strong> 金融、医疗、大型跨国企业等内部合规极其严格的中大型 B 端组织。</li>
+          <li><strong>为什么重要：</strong> 提供基于意图的动态权限发放，确保满足 SOC2 等合规审计要求，是企业级 AI 落地的必需要件。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开材料没有披露 pricing；按照商业逻辑，Agentic Fabriq 应该是向企业出售权限控制与集成中间层，属于 enterprise security / identity infra。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>公开 founder 信息里，Paulina Xu 的自述是 “AI + Physics @ MIT”；YC 页面还把公司描述为 “security middleware for all agentic communication”。Matthew Xu 为联合创始人，但当前公开 snippet 未给出更完整履历。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>这类公司是否能成功，关键不在“agent 是否需要权限”，因为这个点几乎是一个共识了（如果Agent真的想“替代”部分员工，发挥生产力，那么行政/安全层面的监管是不可或缺的）
+          <li></li>它最重要的点在于它能否真正成为企业已有 IAM、data systems 和 agent stack 之间的控制层，或者是和企业已有监管系统的高度融合；如果能插在系统中央，那么它的“上手性和”不可替代性“会比较强（当然这同时也要求该项目能够向企业证明自己的安全性和可靠性，并且可能还会有一些政策监管层面的阻碍）。如果只是新的一层 SDK，替代性会高。</li></p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Slide 8: Salus -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/salus" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Salus <span class="tag">安全与护栏</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Salus 做的是 runtime guardrails。它通过 API 包裹 agent，在 action 执行前做检查，阻止错误动作，并提供即时反馈来引导重试。 </p>
+        <ul>
+          <li><strong>解决的问题：</strong> AI 因逻辑错误或幻觉发出违规 API 指令（如误转账、误发机密邮件或删库）的致命安全风险。</li>
+          <li><strong>目标客户：</strong> 赋予了 AI 外部操作权限的企业 IT 团队、安全部门及 Agent 研发厂商。</li>
+          <li><strong>为什么重要：</strong> 将传统的事后报警转变为事前拦截，并在阻断后指导 AI 纠正操作。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开材料没有披露具体收费；按照商业逻辑，Salus 作为 agent runtime validation API 提供给开发者和企业团队，属于 API / infra 产品</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>Kevin Pan 和 Vedant Singh 是 Stanford 的前室友，两人都学 CS；YC 页面还写 Vedant 曾做 AI research，并有 Stanford CS 背景。 </p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>Salus 的价值在于它补的是 execution-time prevention 这一层，而不是事后监控：类似于针对junior员工操作权限的监管，如果Agent未来真的尝试去替代真实员工，那么类似的实时行为监管市场一点会出现；
+          <li>只要 agent 被允许执行真实操作，pre-execution validation 就天然比离线 eval 更接近预算中心。
+          <li>同时，该项目对prevention的准确度要求很高，因为enterpise的容错度非常低，并且该项目如何项企业客户证明自己的安全性和可靠性也会是一个比较大的问题</li></p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Runtime -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/runtime" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Runtime <span class="tag">安全与护栏</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Runtime 的官方描述是：给工程团队提供 control 和 visibility，让组织里的人能安全使用 coding agents；核心能力包括 sandboxed environments、session-level observability 和 configurable guardrails。它强调的是“安全使用 coding agents”，不只是所谓的“临时沙盒”。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> AI 编写的代码直接在企业宿主机或主代码库中运行可能导致的系统崩溃与安全漏洞。</li>
+          <li><strong>目标客户：</strong> 开发自动化编程助手（Coding Agent）、自动化测试工具的技术团队。</li>
+          <li><strong>为什么重要：</strong> 为 AI 提供了安全的试错与执行空间，消除了开发者放权让 AI 运行代码的物理隐患。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开页面未披露 pricing。按照商业逻辑，Runtime应该是面向使用 coding agents 的工程组织出售安全与可观测性基础设施</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>公开 founder 信息显示，Gus Trigos 此前做过 Mentum（YC S21，后被收购）</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>和其他项目类似，我认为Runtime这个项目也是一个“卖铲子”的角色，也就是说不管AI agent是否真的能产生真正的生产力，这类确保Agent不会“瞎搞”的产品，在社会层面大规模尝试agent的时代，一定是有市场的；
+          <li>从商业模式上讲，Runtime 更像企业内部推广 coding agents 的治理层。它切入的不是模型能力，而是 rollout 过程里的边界、可见性和权限问题。在目前AI监管体系薄弱的背景下，这比单纯做 sandbox 更接近真实企业需求</li></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 11: Moda -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/moda" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Moda <span class="tag">监控与可靠性</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Moda 的官方定位是 agent 的 reliability & monitoring layer。它追踪 hallucinations、laziness、forgetfulness 和 tool call failures，同时也提供 user frustration、NPS、retention 和 churn 的分析；不是一个单纯的 eval 打分工具。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> 企业修改提示词或更换底层模型后，依赖人工抽查 AI 回复质量导致效率低下且标准不一的问题。</li>
+          <li><strong>目标客户：</strong> 频繁迭代 Prompt、自行微调模型，以及对对外输出质量要求极高的 AI 研发团队。</li>
+          <li><strong>为什么重要：</strong> 提供了标准化的 QA 流水线，通过量化分数直观展示模型迭代的优劣，确保业务输出可靠。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开页面未披露具体定价；按照商业逻辑，Moda 应该是面向 agent 产品团队提供可靠性与用户表现分析层。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>核心成员具备大型科技公司 AI 红队（Red Team）和模型对齐（Alignment）工作背景。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>Moda 值得看的地方在于，它把“agent 是否真正有用”往更靠近 PMF 的指标上拉，不只看技术指标，也看 retention 和 churn。这个切口比传统 eval 更贴近产品团队。</li>
+          <li>第二点是Moda在当前agent创业&应用的背景下，比较容易sell自己的产品；</li>
+          <li>并且因为agent数量太多，让每一个agent都自己去做这样一个产品不太现实，最终大概率会演变成为一个第三方的平台，然后适用于各种agent。</li>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 12: Sponge -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/sponge" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Sponge <span class="tag">金融与支付</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Sponge 做的是 “financial infrastructure for the agent economy”。它让 agents 可以使用 bank accounts、cards 和 crypto；同时它也让 businesses 能直接卖给 agents。其公开材料里分成两个部分：Sponge Wallet 让 agent 自主付款，Sponge Gateway 让商家接入 agent 支付。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> AI 程序受限于传统银行实名验证，无法自主支付外部服务费或采购资源的资金通道阻塞。</li>
+          <li><strong>目标客户：</strong> 开发自主工作流的 Agent 团队，以及希望减少财务人工审批的极客企业。</li>
+          <li><strong>为什么重要：</strong> 解决了针对代码程序的 KYC 合规难题，让 AI 真正实现从任务发起到采购支付的业务闭环。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>一端服务 agent 侧支付能力，另一端服务商家侧 agent-native 收款能力；公开材料未披露收费方式。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p> YC 页面显示三位联合创始人 Eric Zhang、Jae Choi、Rishab Luthra 都来自 Stripe Crypto。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>Sponge 的想象力最大的一点，是它不只是“给 agent 一张卡”，而是在尝试搭一套 agent 可被视作交易直接参与者的支付基础设施。
+          <li>但是，既然设计了支付体系，那么合规/牌照等问题又是一个不可避免的事儿；所以可能在在传统金融支付体系有经验&资源的“金融老炮”更适合这类型的创业。</li>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 13: Maven -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/maven" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Maven <span class="tag">金融与支付</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Maven 是 “Payments Infrastructure for Voice Agents”。它让 AI voice agents 通过一次 API call 在电话中完成收款，并处理 card processing 与 PCI compliance，同时兼容不同 payment gateways。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> 用户通过语音完成预订后仍需跳转到手机端输入密码支付，导致转化率极低的用户体验割裂。</li>
+          <li><strong>目标客户：</strong> 智能硬件、车载语音厂商以及开发电话语音订餐/预订机器人的服务提供商。</li>
+          <li><strong>为什么重要：</strong> 定义了语音端支付协议，让语音 AI 具备直接产生闭环销售收入的能力。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开页面没有披露具体 pricing；按照商业逻辑，Maven 应该是面向部署 voice AI 的团队提供电话支付基础设施。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>支付清算与身份防欺诈领域的资深团队，擅长解决非屏幕密码认证的安全结算对接。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>Maven 的价值在于它补上目前voice agent 最尴尬的一步：会说、会转化，但支付/收款，因为很难要求使用voice agent的人直接说出密码/助记词；
+          <li>由此，只要电话仍是高价值场景里的成交入口，这类在voice agent框架下做语音KYC的基础设施就有明确需求;
+          <li>同时，各大voice agent厂家也有极大可能性会自己下场做，因为支付这一步对于voice agent用户来说非常重要；voice agent厂家很难说把如此重要的一步交给第三方。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 14: Terminal Use -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/terminal-use" target="_blank" class="details-btn">Details ↗</a>
+      <h2>Terminal Use <span class="tag">环境与交互</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>Terminal Use 的官方定位是 “Vercel for background agents”。它是一个面向 background agents 的 orchestration platform，专为使用 filesystem 的 agents 设计，强调 CLI-first，并支持 fork filesystems、并行尝试不同 agent 配置、使用任意 SDK 与自定义依赖。 </p>
+        <ul>
+          <li><strong>解决的问题：</strong> 依附于网页浏览器的 AI 一旦用户关闭页面，任务就会中断且上下文丢失的局限性。</li>
+          <li><strong>目标客户：</strong> 开发需要连续运行数天执行深度任务的 B 端企业及 RPA 开发商。</li>
+          <li><strong>为什么重要：</strong> 为 AI 提供了不间断工作的物理承载空间，是 AI 转变为“全天候数字员工”的基建。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开材料未披露定价；按照商业逻辑，Terminal Use 应该是面向需要长期后台运行 agent 的开发团队提供 agent hosting / orchestration infrastructure。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>公开 founder 信息显示，Vivek Raja、Filip Balucha、Stavros Filosidis 三位创始人都与 Palantir 有经历；其中 Vivek 负责过大型 agent use case 的 technical delivery，Filip 做过 ontology，Stavros 做过 coding infrastructure。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li>这个项目的难点在于是否真的能够有质量地达成它所说的功能：因为所有企业都希望自己的agent可以24/7地运行，但是能否真正按照实际任务需求来解决模型context丢失、agent状态管理、agent间通信等问题，来让agent真正地“长期运行”，是一个非常大的挑战；
+          <li>如果它只是一个“长期运行的服务器”，那它的价值就比较有限了；真正有价值的应该是它能提供一个真正适合agent运行的环境，比如说它能提供一些agent专用的功能（比如说agent专用的文件系统，或者说agent专用的网络环境），或者说它能提供一些agent专用的监控和日志功能；如果它只是一个普通的服务器，那么它的竞争力就不太足了，因为云服务商完全可以提供类似的服务。</li></p>
+           </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 15: 21st -->
+  <div class="slide">
+    <div class="slide-content">
+      <a href="https://www.ycombinator.com/companies/21st" target="_blank" class="details-btn">Details ↗</a>
+      <h2>21st <span class="tag">环境与交互</span></h2>
+      
+      <div class="highlight-summary">
+        <h3>🔥 核心概述 (Summary)</h3>
+        <p>21st 的官方定位是 “infrastructure and UI building blocks for the agentic internet”。它自称是 AI 应用领域最大的 React component registry，公开写到已有 1.4M developers、200K MAU，并提供 UI components、agent templates，以及带 UI、tools、memory、observability 和 managed infrastructure 的 SDK。</p>
+        <ul>
+          <li><strong>解决的问题：</strong> 纯文本聊天框难以直观展示复杂表格、图表和表单，导致应用交互体验呆板低效。</li>
+          <li><strong>目标客户：</strong> 寻求提升产品交互体验的 AI 平台开发者、内部工具研发部门。</li>
+          <li><strong>为什么重要：</strong> 推动了前端开发范式的演进，让软件界面从“预先写死”转变为“AI 根据需求现场生成”。</li>
+        </ul>
+      </div>
+
+      <div class="grid-2">
+        <div class="content-box">
+          <h3>💰 商业模式</h3>
+          <p>公开页面没有披露具体定价；按照商业逻辑，21st 应该是面向开发者提供构建 agent app 的组件、模板和 SDK 基础设施。</p>
+        </div>
+        <div class="content-box">
+          <h3>👥 团队背景</h3>
+          <p>公开 founder 信息显示，Serafim Korablev 曾参与 Rork、Via 等项目；Sergey Bunas 曾在 Deel 做 senior software engineer，也做过 Suggesty 和 Stage。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>🤔 个人思考 (My Thoughts)</h3>
+        <p>
+          <li> 我觉得这个项目的核心竞争点并不是技术层面，而是设计层面：因为它本质上是把用户得到的output实时转换为可视化的UI组件；如果转换出来的UI组件并不具备美感和可读性，那用户完全可以自己阅读文字output；而是否有美感&可读性更多是看设计层面，而非技术层面</li>
+    
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 16: 总结页 (Conclusion) -->
+  <div class="slide">
+    <div class="slide-content">
+      <h1>核心结论与未来展望 (Conclusion)</h1>
+      
+      <div class="grid-2" style="margin-top: 30px;">
+        <div class="content-box">
+          <h3>1. 商业化重心的实质转移</h3>
+          <p>早期的基础设施建设主要致力于降低调用大模型的 API 成本；如今，核心目标已转向<strong>提升控制权与透明度</strong>，以消除大型企业规模化部署 AI 时面临的合规恐惧症和安全风险。</p>
+        </div>
+        <div class="content-box">
+          <h3>2. 独立经济实体的诞生</h3>
+          <p>随着身份认证（IAM）、沙盒隔离与自动化支付网关等基础设施的完善，Agent 正在摆脱附属工具的定位，逐渐成为具备合法权限、自有资金和运行环境的<strong>独立数字经济参与者</strong>。</p>
+        </div>
+      </div>
+
+      <div class="my-view">
+        <h3>💡 终局推演</h3>
+        <p>在即将到来的代理经济（Agent Economy）中，面向最终用户的应用层生命周期可能极其短暂且竞争惨烈，但底层基础设施是不可或缺的基石。谁能彻底掌控 Agent 运行的鉴权、算力调度与资金支付管道，谁就有极大可能在未来的机器劳动力市场中建立类似目前 AWS 或 Stripe 的寡头垄断地位。</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- Navigation UI -->
+<!-- Navigation controls -->
 <div class="nav">
   <button onclick="prevSlide()" aria-label="Previous">&larr;</button>
   <button onclick="nextSlide()" aria-label="Next">&rarr;</button>
 </div>
 <div class="slide-counter">
-  <span id="current">1</span> / <span id="total">10</span>
+  <span id="current">1</span> / <span id="total">16</span>
 </div>
 
 <script>
   const slides = document.querySelectorAll('.slide');
-  const body = document.getElementById('body');
   let current = 0;
-
-  function updateTheme(n) {
-    if (n === 0) {
-      body.style.background = "#000";
-    } else {
-      body.style.background = "#f5f5f5";
-    }
-  }
 
   function showSlide(n) {
     slides[current].classList.remove('active');
     current = (n + slides.length) % slides.length;
     slides[current].classList.add('active');
-    updateTheme(current);
     document.getElementById('current').textContent = current + 1;
   }
 
@@ -613,10 +701,18 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); nextSlide(); }
     if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prevSlide(); }
+    if (e.key === 'Escape') { showSlide(0); }
   });
 
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    let touchEndX = e.changedTouches[0].clientX;
+    if (touchStartX - touchEndX > 50) nextSlide();
+    if (touchEndX - touchStartX > 50) prevSlide();
+  });
+  
   document.getElementById('total').textContent = slides.length;
-  updateTheme(0);
 </script>
 
 </body>
